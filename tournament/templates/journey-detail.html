@@ -3,7 +3,7 @@
     {% load static %}
 
     <div class="container">
-        
+
         <h1 style="margin-top: 15px;">Jornada {{journey.id}} | {{journey.date}} </h1>
         <table class="table">
             <tbody>
@@ -28,7 +28,19 @@
                 {% for instance in matchesqueryset %}
                 <a style="color: black; text-decoration: none; margin-top: 10px;"data-bs-toggle="collapse" href="#partida{{instance.id}}" role="button" aria-expanded="false" aria-controls="collapseExample">
                     <li class="list-group-item" style="border-radius:11px;">
-                        <h5>Partida #{{ instance.id }}</h5>
+
+                        <div class="row">
+                            <div class="col">
+                                <h5>Partida #{{ instance.id }}</h5>
+                            </div>
+                            <div class="col" style="
+                            text-align: right;
+                            font-weight: lighter;
+                            font-style: italic;">
+                                <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 53.867 53.867" style="width: 10px; margin-bottom: 4px; enable-background:new 0 0 53.867 53.867;" xml:space="preserve"><polygon style="fill:#EFCE4A;" points="26.934,1.318 35.256,18.182 53.867,20.887 40.4,34.013 43.579,52.549 26.934,43.798 10.288,52.549 13.467,34.013 0,20.887 18.611,18.182 "/></svg> {{ instance.win.nickname }}
+                            </div>
+                        </div>
+
                         <div class="collapse" id="partida{{instance.id}}">
                             <div class="card card-body" style="border: none;">
                             Ganador: {{instance.win.nickname}} <br/>
@@ -61,11 +73,13 @@
             </ul>
         </div>
 
+        {% if nickname == 'Eirron' %}
         <!-- Button trigger modal -->
-        <button type="button" style="width: 100%; margin-top: 15px;" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-        Agregar Partida
-        </button>
-    
+            <button type="button" style="width: 100%; margin-top: 15px;" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                Agregar Partida
+            </button>
+        {% endif %}
+
         <!-- Modal -->
         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -76,8 +90,8 @@
                 </div>
                 <div class="modal-body">
                     <form method="POST">
-                        {% csrf_token %} 
-                        
+                        {% csrf_token %}
+
                         <div class="parent-form">
                             {{ form.as_p }}
                         </div>
@@ -86,7 +100,7 @@
 
                         <div class="playersFormList">
                             <div class="row mt-2 childForm">
-                                <div class="col-6">
+                                <div class="col-5">
                                 {{ childForm.player.errors }}
                                 {{ childForm.player.label_tag }}
                                 {{ childForm.player }}
@@ -136,7 +150,7 @@
 
             newPlayer.find('input').val("");
             newPlayer.find('input').attr('name');
-            
+
             let deleteButon = newPlayer.find('.delete-row');
             deleteButon.click(deleteRow);
             deleteButon.css('display','block');

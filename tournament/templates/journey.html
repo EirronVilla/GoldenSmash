@@ -11,7 +11,7 @@
     </style>
 
     <div class="container">
-        
+
         <h1 style="margin-top: 15px;">Jornadas</h1>
 
         <div style="margin-top: 15px;" class="classification">
@@ -36,6 +36,7 @@
 
         </div>
 
+        {% if nickname == 'Eirron' %}
         <!-- Button trigger modal -->
         <div style="margin-top: 15px;">
             <a href="/createJourney/{{nickname}}">
@@ -44,6 +45,7 @@
                 </button>
             </a>
         </div>
+        {% endif %}
 
     </div>
 

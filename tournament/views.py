@@ -26,7 +26,7 @@ def register(request):
         return redirect('default', player.nickname)
     elif request.method == 'GET':
         return render(request, 'login.html')
-    
+
 def sumredirect(request):
     return redirect('register')
 
@@ -39,7 +39,7 @@ class itemDTO:
         self.totalKills = totalKills
         self.totalDamage = totalDamage
         self.effectiveness = effectiveness
-    
+
 @protected_view
 def summary(request, nickname):
     personqueryset = Player.objects.all() or []
@@ -52,14 +52,16 @@ def summary(request, nickname):
         avgDamage = PlayerMatch.objects.filter(player=person).aggregate(Avg('damage')).get('damage__avg')
 
         totalKills = str("{:,.2f}".format(avgKills)) if avgKills else 0
-        totalDamage = str("{:,.2f}".format(avgDamage)) if avgKills else 0
-        effectiveness = str("{:,.2f}".format(totalWins / totalMatches)) if totalMatches > 0 else 0
+        totalDamage = str("{:,.2f}".format(avgDamage)) if avgDamage else 0
+        effectivenessInt = totalWins / totalMatches if totalMatches > 0 else 0
+        effectiveness = str("{:,.2f}".format(effectivenessInt))
         dotlist.append(itemDTO(person.nickname, totalMatches, totalWins, totalSecond, totalKills, totalDamage, effectiveness))
 
+    dotlist.sort(key=lambda player: player.effectiveness, reverse=True)
     context = {
-        "activeView":"summary", 
+        "activeView":"summary",
         "personqueryset": dotlist,
-        "nickname": nickname, 
+        "nickname": nickname,
         }
     return render(request, 'index.html', context)
 
@@ -67,9 +69,9 @@ def summary(request, nickname):
 def journeys(request, nickname):
     journeyqueryset = Journey.objects.all() or []
     context = {
-        "activeView":"journeys", 
+        "activeView":"journeys",
         "journeyqueryset": journeyqueryset,
-        "nickname": nickname, 
+        "nickname": nickname,
         }
     return render(request, 'journey.html', context)
 
@@ -96,7 +98,7 @@ class matchSumDto:
 def journey(request, nickname, id):
     if request.method == 'GET':
         journey = get_object_or_404(Journey, id=id)
-        matches = Match.objects.filter(journey=id)
+        matches = Match.objects.filter(journey=journey)
 
         blankForm = MatchForm()
         childForm = PlayerMatchForm()
@@ -109,7 +111,7 @@ def journey(request, nickname, id):
             playersList = []
             playerMatches = PlayerMatch.objects.filter(match=match)
             for playerMatch in playerMatches:
-                player = get_object_or_404(PlayerMatch, id=playerMatch.player.id)
+                player = get_object_or_404(PlayerMatch, id=playerMatch.id)
                 playersList.append(player)
                 playersList.sort(key=lambda playerInstance: playerInstance.kills, reverse=True)
 
