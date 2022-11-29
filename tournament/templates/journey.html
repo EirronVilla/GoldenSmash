@@ -1,0 +1,51 @@
+    {% extends "navigation.html" %}
+    {% block content %}
+    {% load static %}
+
+
+    <style>
+        .journey-list-element:hover{
+            background-color: grey;
+            color: white;
+        }
+    </style>
+
+    <div class="container">
+        
+        <h1 style="margin-top: 15px;">Jornadas</h1>
+
+        <div style="margin-top: 15px;" class="classification">
+            <ul class="list-group">
+                {% for instance in journeyqueryset %}
+                <a style="color: black; text-decoration: none; margin-top: 10px;" href="/journey/{{nickname}}/{{instance.id}}">
+                    <li class="list-group-item journey-list-element" style="border-radius:11px;">
+                        <div class="row">
+                            <div class="col">
+                                Jornada {{ instance.id }}
+                            </div>
+                            <div class="col" style="
+                            text-align: right;
+                            font-weight: lighter;">
+                                    {{instance.date}}
+                            </div>
+                        </div>
+                    </li>
+                </a>
+                {% endfor %}
+            </ul>
+
+        </div>
+
+        <!-- Button trigger modal -->
+        <div style="margin-top: 15px;">
+            <a href="/createJourney/{{nickname}}">
+                <button type="button" style="width: 100%;" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                    Crear Jornada
+                </button>
+            </a>
+        </div>
+
+    </div>
+
+
+    {% endblock content %}

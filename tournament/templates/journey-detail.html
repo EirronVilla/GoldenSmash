@@ -1,0 +1,155 @@
+    {% extends "navigation.html" %}
+    {% block content %}
+    {% load static %}
+
+    <div class="container">
+        
+        <h1 style="margin-top: 15px;">Jornada {{journey.id}} | {{journey.date}} </h1>
+        <table class="table">
+            <tbody>
+                <thead>
+                    <tr>
+                      <th scope="col">Jugador</th>
+                      <th scope="col">Ganes</th>
+                      <th scope="col">Finales</th>
+                    </tr>
+                  </thead>
+                {% for playerInstanceSum in journeySum%}
+                    <tr>
+                        <td>{{playerInstanceSum.player}}</td>
+                        <td>{{playerInstanceSum.winCount}}</td>
+                        <td>{{playerInstanceSum.secondCount}}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div style="margin-top: 15px;" class="classification">
+            <ul class="list-group">
+                {% for instance in matchesqueryset %}
+                <a style="color: black; text-decoration: none; margin-top: 10px;"data-bs-toggle="collapse" href="#partida{{instance.id}}" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    <li class="list-group-item" style="border-radius:11px;">
+                        <h5>Partida #{{ instance.id }}</h5>
+                        <div class="collapse" id="partida{{instance.id}}">
+                            <div class="card card-body" style="border: none;">
+                            Ganador: {{instance.win.nickname}} <br/>
+                            Segundo Lugar: {{instance.second.nickname}} <br/>
+                            <br/>
+                            <h5>Resumen</h5>
+                            <table class="table">
+                                <thead>
+                                  <tr>
+                                    <th scope="col">Jugador</th>
+                                    <th scope="col">Kills</th>
+                                    <th scope="col">Da&ntilde;o</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                    {% for playerInstance in instance.players%}
+                                        <tr>
+                                            <td>{{playerInstance.player.nickname}}</td>
+                                            <td>{{playerInstance.kills}}</td>
+                                            <td>{{playerInstance.damage}}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                              </table>
+                            </div>
+                        </div>
+                    </li>
+                </a>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Button trigger modal -->
+        <button type="button" style="width: 100%; margin-top: 15px;" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+        Agregar Partida
+        </button>
+    
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Agregar Partida</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST">
+                        {% csrf_token %} 
+                        
+                        <div class="parent-form">
+                            {{ form.as_p }}
+                        </div>
+
+                        <h5> Jugadores: </h5>
+
+                        <div class="playersFormList">
+                            <div class="row mt-2 childForm">
+                                <div class="col-6">
+                                {{ childForm.player.errors }}
+                                {{ childForm.player.label_tag }}
+                                {{ childForm.player }}
+                                </div>
+                                <div class="col">
+                                {{ childForm.kills.errors }}
+                                {{ childForm.kills.label_tag }}
+                                {{ childForm.kills }}
+                                </div>
+                                <div class="col">
+                                {{ childForm.damage.errors }}
+                                {{ childForm.damage.label_tag }}
+                                {{ childForm.damage }}
+                                </div>
+                                <div class="col">
+                                    <br/>
+                                    <button style="display: none;" type="button" class="btn btn-danger delete-row"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                      </svg></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row p-2">
+                            <a type="button" id="add-row" class="mt-3 btn btn-primary add-new-player">Agregar Jugador</a>
+                        </div>
+
+                        <div class="modal-footer mt-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                        <button type="submit" class="btn btn-primary">
+                            Guardar Cambios
+                        </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $("#add-row").click(function () {
+
+            let playersList = $(".playersFormList");
+            let newPlayer = playersList.children().first().clone();
+
+            newPlayer.find('input').val("");
+            newPlayer.find('input').attr('name');
+            
+            let deleteButon = newPlayer.find('.delete-row');
+            deleteButon.click(deleteRow);
+            deleteButon.css('display','block');
+
+            playersList.append(newPlayer);
+        });
+
+        let deleteRow = function () {
+            let rowToDelete = $(this).parent().parent();
+            rowToDelete.remove();
+        }
+    </script>
+
+    <!-- Button trigger modal -->
+
+    {% endblock content %}
