@@ -142,8 +142,6 @@ def journey(request, nickname, id):
         journey = get_object_or_404(Journey, id=id)
         match = Match(win=player1, second=player2, journey=journey)
         match.save()
-        print("============================== HERE!! =======")
-        print(match)
         # Create Players
         players = form.getlist('player')
         kills = form.getlist('kills')
@@ -158,3 +156,9 @@ def journey(request, nickname, id):
                 )
             newPlayerMatch.save()
         return redirect('journey', nickname, id)
+
+def closeJourney(request, nickname, id):
+    journey = get_object_or_404(Journey, id=id)
+    journey.isActive = False
+    journey.save()
+    return redirect('journey', nickname, journey.id)

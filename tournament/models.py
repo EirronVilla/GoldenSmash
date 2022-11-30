@@ -7,6 +7,8 @@ class Player(models.Model):
 
 class Journey(models.Model):
     date = models.DateField()
+    number = models.IntegerField(default=0)
+    isActive = models.BooleanField(default=True)
 
     def __str__(self):
         return "Jornada " + str(self.id)
@@ -14,6 +16,7 @@ class Journey(models.Model):
 class Match(models.Model):
     win = models.ForeignKey(Player, related_name="winner", on_delete=models.CASCADE)
     second = models.ForeignKey(Player, related_name="second", on_delete=models.CASCADE)
+    number = models.IntegerField(default=0)
     journey = models.ForeignKey(Journey, on_delete=models.CASCADE)
 
     def __str__(self):
