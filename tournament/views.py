@@ -112,16 +112,15 @@ def journey(request, nickname, id):
             playersList = []
             playerMatches = PlayerMatch.objects.filter(match=match)
             for playerMatch in playerMatches:
-                player = get_object_or_404(PlayerMatch, id=playerMatch.id)
-                playersList.append(player)
+                playersList.append(playerMatch)
                 playersList.sort(key=lambda playerInstance: playerInstance.kills, reverse=True)
 
                 #Count wins through journey
-                winCount = winnerMatches.count(player.player)
-                secountCount = secondMatches.count(player.player)
+                winCount = winnerMatches.count(playerMatch.player)
+                secountCount = secondMatches.count(playerMatch.player)
 
-                if player.player not in [x.player for x in winnerMatchesDto]:
-                    winnerMatchesDto.append(matchSumDto(player=player.player, winCount=winCount, secondCount=secountCount))
+                if playerMatch.player not in [x.player for x in winnerMatchesDto]:
+                    winnerMatchesDto.append(matchSumDto(player=playerMatch.player, winCount=winCount, secondCount=secountCount))
             matchesDto.append(matchDto(id=match.id, win=match.win, second=match.second, players=playersList))
 
         winnerMatchesDto.sort(key=lambda x: x.winCount, reverse=True)
