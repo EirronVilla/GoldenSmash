@@ -76,8 +76,9 @@ def journeys(request, nickname):
     return render(request, 'journey.html', context)
 
 def createJourney(request, nickname):
+    journeyCount = Journey.objects.count() + 1
     today = date.today()
-    newJourney = Journey(date=today)
+    newJourney = Journey(date=today, number=journeyCount)
     newJourney.save()
     return redirect('journey', nickname, newJourney.id)
 
