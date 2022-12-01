@@ -14,9 +14,23 @@
 
         <h1 style="margin-top: 15px;">Jornadas</h1>
 
+        {% if nickname == 'Eirron' %}
+        <!-- Button trigger modal -->
+        <div style="margin-top: 15px;">
+            <button type="button" style="width: 100%;" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
+                Crear Jornada
+            </button>
+        </div>
+        {% endif %}
+
         <div style="margin-top: 15px;" class="classification">
             <ul class="list-group">
                 {% for instance in journeyqueryset %}
+                {% if forloop.counter == 1 %}
+                    <h5>Última jornada:</h5>
+                {% elif forloop.counter == 2 %}
+                    <h5 style="margin-top: 20px;">Jornadas anteriores:</h5>
+                {% endif %}
                 <a style="color: black; text-decoration: none; margin-top: 10px;" href="/journey/{{nickname}}/{{instance.id}}">
                     <li class="list-group-item journey-list-element" style="border-radius:11px;">
                         <div class="row">
@@ -33,17 +47,7 @@
                 </a>
                 {% endfor %}
             </ul>
-
         </div>
-
-        {% if nickname == 'Eirron' %}
-        <!-- Button trigger modal -->
-        <div style="margin-top: 15px;">
-            <button type="button" style="width: 100%;" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
-                Crear Jornada
-            </button>
-        </div>
-        {% endif %}
   
         <!-- Modal -->
         <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">

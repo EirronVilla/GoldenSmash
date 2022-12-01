@@ -67,7 +67,7 @@ def summary(request, nickname):
 
 @protected_view
 def journeys(request, nickname):
-    journeyqueryset = Journey.objects.all() or []
+    journeyqueryset = Journey.objects.all().order_by('-number') or []
     context = {
         "activeView":"journeys",
         "journeyqueryset": journeyqueryset,
