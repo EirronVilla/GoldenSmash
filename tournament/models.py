@@ -9,6 +9,7 @@ class Journey(models.Model):
     date = models.DateField()
     number = models.IntegerField(default=0)
     isActive = models.BooleanField(default=True)
+    JourneyType = models.CharField(max_length=50, blank=True, null=True, default="Journey")
 
     def __str__(self):
         return "Jornada " + str(self.id)
@@ -18,6 +19,7 @@ class Match(models.Model):
     second = models.ForeignKey(Player, related_name="second", on_delete=models.CASCADE)
     number = models.IntegerField(default=0)
     journey = models.ForeignKey(Journey, on_delete=models.CASCADE)
+    wasPlayed = models.BooleanField(default=True)
 
     def __str__(self):
         return "Partida " + str(self.id)
@@ -25,6 +27,7 @@ class Match(models.Model):
 class PlayerMatch(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     match = models.ForeignKey(Match, on_delete=models.CASCADE)
-    kills = models.IntegerField()
-    damage = models.IntegerField()
+    kills = models.IntegerField(blank=True, null=True)
+    damage = models.IntegerField(blank=True, null=True)
+    role = models.CharField(max_length=15, default="Player")
 
