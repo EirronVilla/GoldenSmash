@@ -4,6 +4,8 @@ from datetime import date
 from .forms import MatchForm, PlayerMatchForm
 from django.db.models import Avg
 from statistics import mode
+from itertools import combinations
+import random
 
 # AUTHENTICATION FUNCTIONS
 def protected_view(route_function):
@@ -67,7 +69,7 @@ def summary(request, nickname):
 
 @protected_view
 def journeys(request, nickname):
-    journeyqueryset = Journey.objects.all().order_by('-number') or []
+    journeyqueryset = Journey.objects.filter(JourneyType="Journey").order_by('-number') or []
     context = {
         "activeView":"journeys",
         "journeyqueryset": journeyqueryset,
@@ -84,11 +86,15 @@ def createJourney(request, nickname):
 
 
 class matchDto:
-    def __init__(self, id, win, second, players) -> None:
+    def __init__(self, id, win, second, players, number=0, wasPlayed=True, shouldShow=True) -> None:
         self.id = id
         self.win = win
         self.second = second
         self.players = players
+        self.number = number
+        self.wasPlayed = wasPlayed
+        self.shouldShow = shouldShow
+
 
 class matchSumDto:
     def __init__(self, player, winCount, secondCount) -> None:
@@ -113,7 +119,7 @@ def journey(request, nickname, id):
             playerMatches = PlayerMatch.objects.filter(match=match)
             for playerMatch in playerMatches:
                 playersList.append(playerMatch)
-                playersList.sort(key=lambda playerInstance: playerInstance.kills, reverse=True)
+                playersList.sort(key=lambda playerInstance: 0 if playerInstance.kills is None else playerInstance.kills, reverse=True)
 
                 #Count wins through journey
                 winCount = winnerMatches.count(playerMatch.player)
@@ -162,3 +168,147 @@ def closeJourney(request, nickname, id):
     journey.isActive = False
     journey.save()
     return redirect('journey', nickname, journey.id)
+
+def tournamentList(request, nickname):
+    if request.method == 'GET':
+        tournamentqueryset = Journey.objects.filter(JourneyType="Tournament").order_by('-number') or []
+        childForm = PlayerMatchForm()
+        context = {
+            "childForm": childForm,
+            "activeView":"tournament",
+            "journeyqueryset": tournamentqueryset,
+            "nickname": nickname,
+            }
+        return render(request, 'tournaments.html', context)
+    elif request.method == 'POST':
+        #Create Journey
+        journeyCount = Journey.objects.filter(JourneyType="Tournament").count() + 1
+        today = date.today()
+        newJourney = Journey(date=today, number=journeyCount, isActive=True, JourneyType="Tournament")
+        newJourney.save()
+
+        # Create Players
+        form = request.POST
+        playerNames = form.getlist('player')
+        players = []
+        for pos in range(len(playerNames)):
+            currentPlayer = get_object_or_404(Player, id=playerNames[pos])
+            if(currentPlayer):
+                players.append(currentPlayer)
+
+        #Create Matches to be played
+        matchesToPlay = list(combinations(players, 2))
+        random.shuffle(matchesToPlay)
+        for pos in range(len(matchesToPlay)):
+            match = Match(number=pos+1, journey=newJourney, wasPlayed=False)
+            match.save()
+            player1 = PlayerMatch(
+                player=matchesToPlay[pos][0],
+                match=match,
+                )
+            player1.save()
+            player2 = PlayerMatch(
+                player=matchesToPlay[pos][1],
+                match=match,
+                )
+            player2.save()
+        
+        return redirect('tournament', nickname, newJourney.id)
+    
+def tournament(request, nickname, id):
+    journey = get_object_or_404(Journey, id=id)
+    if request.method == 'GET':
+        matches = Match.objects.filter(journey=journey)
+
+        matchesDto = []
+        winnerMatchesDto = []
+        winnerMatches = [x.win for x in matches]
+        secondMatches = [x.second for x in matches]
+        for match in matches:
+                    playersList = []
+                    playerMatches = PlayerMatch.objects.filter(match=match)
+                    for playerMatch in playerMatches:
+                        playersList.append(playerMatch)
+
+                        #Count wins through journey
+                        winCount = winnerMatches.count(playerMatch.player) * 3
+                        secountCount = secondMatches.count(playerMatch.player)
+
+                        if playerMatch.player not in [x.player for x in winnerMatchesDto]:
+                            winnerMatchesDto.append(matchSumDto(player=playerMatch.player, winCount=winCount, secondCount=secountCount))
+                    matchesDto.append(matchDto(id=match.id, win=match.win, second=match.second, players=playersList, number=match.number, wasPlayed=match.wasPlayed, shouldShow=journey.Round == match.journeyRound))
+
+        winnerMatchesDto.sort(key=lambda x: x.winCount, reverse=True)
+        playedMatches = Match.objects.filter(journey=journey, wasPlayed=True).count()
+        roundFinished = playedMatches == len(matchesDto)
+        context = {
+            "journey": journey,
+            "activeView":"tournament",
+            "nickname": nickname,
+            "matchesqueryset": matchesDto,
+            "journeySum": winnerMatchesDto,
+            "matchesToDisplay" : playedMatches + 1,
+            "roundFinished": roundFinished,
+            "currentRound": journey.Round,
+        }
+        return render(request, 'tournament-detail.html', context)
+    elif request.method == 'POST':
+        items = [value for  value in request.POST.items()]
+        for matchPlayed in items[1:]:
+            matchNumber = matchPlayed[0]
+            winnerValue = matchPlayed[1]
+            currentMatch = Match.objects.filter(journey=journey, number=matchNumber).first()
+            playerMatches = PlayerMatch.objects.filter(match=currentMatch)
+            playersList = []
+
+            for playerMatch in playerMatches:
+                playersList.append(playerMatch)
+            
+            winner = [element for element in playersList if element.player.nickname == winnerValue]
+            looser = [element for element in playersList if element not in winner]
+            currentMatch.win = winner[0].player
+            currentMatch.second = looser[0].player
+            currentMatch.wasPlayed = True
+
+            currentMatch.save()
+        return redirect('tournament', nickname, id)
+    
+def closeTournament(request, nickname, id):
+    journey = get_object_or_404(Journey, id=id)
+    journey.isActive = False
+    journey.save()
+    return redirect('tournament', nickname, journey.id)
+
+def nextRount(request, nickname, id, matchesDisplayed):
+    journey = get_object_or_404(Journey, id=id)
+    journey.Round = journey.Round + 1
+    journey.save()
+
+    # Get players for next round
+    matches = Match.objects.filter(journey=journey)
+    players = []
+    for match in matches:
+        playerMatches = PlayerMatch.objects.filter(match = match)
+        players.extend([player.player for player in playerMatches])
+
+    players = set(players)
+    matchesToPlay = list(combinations(players, 2))
+    random.shuffle(matchesToPlay)
+
+    matchNumber = int(matchesDisplayed)
+    for pos in range(len(matchesToPlay)):
+        match = Match(number=matchNumber, journey=journey, journeyRound=journey.Round, wasPlayed=False)
+        match.save()
+        player1 = PlayerMatch(
+            player=matchesToPlay[pos][0],
+            match=match,
+            )
+        player1.save()
+        player2 = PlayerMatch(
+            player=matchesToPlay[pos][1],
+            match=match,
+            )
+        player2.save()
+        matchNumber = matchNumber + 1
+
+    return redirect('tournament', nickname, id)

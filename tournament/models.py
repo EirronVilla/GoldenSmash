@@ -10,16 +10,18 @@ class Journey(models.Model):
     number = models.IntegerField(default=0)
     isActive = models.BooleanField(default=True)
     JourneyType = models.CharField(max_length=50, blank=True, null=True, default="Journey")
+    Round = models.IntegerField(default=1)
 
     def __str__(self):
         return "Jornada " + str(self.id)
 
 class Match(models.Model):
-    win = models.ForeignKey(Player, related_name="winner", on_delete=models.CASCADE)
-    second = models.ForeignKey(Player, related_name="second", on_delete=models.CASCADE)
+    win = models.ForeignKey(Player, related_name="winner", on_delete=models.CASCADE, blank=True, null=True)
+    second = models.ForeignKey(Player, related_name="second", on_delete=models.CASCADE, blank=True, null=True)
     number = models.IntegerField(default=0)
     journey = models.ForeignKey(Journey, on_delete=models.CASCADE)
     wasPlayed = models.BooleanField(default=True)
+    journeyRound = models.IntegerField(default=1)
 
     def __str__(self):
         return "Partida " + str(self.id)

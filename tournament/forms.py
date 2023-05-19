@@ -42,3 +42,19 @@ class PlayerMatchForm(ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(PlayerMatchForm, self).__init__(*args, **kwargs)
+
+class PlayerMatchMinForm(ModelForm):
+    class Meta:
+        model = PlayerMatch
+        fields = [
+            'player',
+        ]
+        labels = {
+            'player':'Jugador',
+        }
+        widgets = {
+            'player': forms.Select(attrs={'class':'form-control'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super(PlayerMatchForm, self).__init__(*args, **kwargs)
