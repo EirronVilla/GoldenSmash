@@ -26,4 +26,9 @@ urlpatterns = [
     path('createJourney/<nickname>/', tournament_views.createJourney, name='createJourney'),
     path('journey/<nickname>/<id>', tournament_views.journey, name='journey'),
     path('closeJourney/<nickname>/<id>', tournament_views.closeJourney, name='closeJourney'),
+    path('closeTournament/<nickname>/<id>', tournament_views.closeTournament, name='closeTournament'),
+    path('tournament/rankings/<nickname>', tournament_views.closeJourney, name='tournamentRankings'),
+    path('tournaments/<nickname>', tournament_views.tournamentList, name='tournament'),
+    path('tournaments/<nickname>/<id>', tournament_views.tournament, name='tournament'),
+    path('nextRound/<nickname>/<id>/<matchesDisplayed>', tournament_views.nextRount, name='nextRount'),
 ]

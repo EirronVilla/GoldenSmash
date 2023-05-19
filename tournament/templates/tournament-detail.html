@@ -1,0 +1,209 @@
+{% extends "navigation.html" %} {% block content %} {% load static %}
+
+<div class="container">
+  <h1 style="margin-top: 15px">Torneo {{journey.number}} | {{journey.date}}</h1>
+  <table class="table">
+    <tbody>
+      <thead>
+        <tr>
+          <th scope="col">Jugador</th>
+          <th scope="col">Puntaje</th>
+          <th scope="col">Perdidas</th>
+        </tr>
+      </thead>
+      {% for playerInstanceSum in journeySum%}
+      <tr>
+        <td>{{playerInstanceSum.player}}</td>
+        <td>{{playerInstanceSum.winCount}}</td>
+        <td>{{playerInstanceSum.secondCount}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if journey.isActive %}
+    <h3>Ronda #{{currentRound}}</h3>
+  {% else %}
+    <h3>Rondas Jugadas: {{currentRound}}</h3>
+  {% endif %}
+  <form id="round-form" method="POST">
+    {% csrf_token %}
+    <div style="margin-top: 15px; margin-bottom: 15px" class="classification">
+      <ul class="list-group">
+        {% for instance in matchesqueryset %} 
+        {% if matchesToDisplay >= forloop.counter %}
+        {% if journey.isActive and instance.shouldShow or not journey.isActive %}
+        <div style="color: black; text-decoration: none; margin-top: 10px">
+          <li class="list-group-item" style="border-radius: 11px">
+            <div class="row">
+              <div class="col-4">
+                <h5>Partida #{{ instance.number }}</h5>
+              </div>
+
+              <div class="col-8">
+                <div
+                  style="width: 100%"
+                  class="btn-group"
+                  role="group"
+                  aria-label="Basic radio toggle button group"
+                >
+                  {% for playerInstance in instance.players%} <input
+                  type="radio" class="btn-check"
+                  id="btnradio{{playerInstance.player.nickname}}{{instance.number}}"
+                  autocomplete="off" name="{{instance.number}}"
+                  value="{{playerInstance.player.nickname}}" {% if instance.wasPlayed %} disabled {% endif %} 
+                  {% if instance.win.nickname == playerInstance.player.nickname %}
+                  checked {% endif %} />
+                  <label
+                    class="btn {% if instance.wasPlayed %} btn-outline-secondary {% else %} btn-outline-primary {% endif %}"
+                    for="btnradio{{playerInstance.player.nickname}}{{instance.number}}"
+                    >{{playerInstance.player.nickname}}</label
+                  >
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </li>
+        </div>
+        {% endif %}
+        {% endif %} 
+        {% endfor %}
+      </ul>
+    </div>
+  </form>
+
+  {% if journey.isActive %}
+  <!-- Button trigger modal -->
+
+  {% if roundFinished %}
+  <div>
+    <button
+      type="button"
+      style="width: 100%"
+      class="btn btn-primary"
+      data-bs-toggle="modal"
+      data-bs-target="#modalNext"
+    >
+      Siguente Ronda
+    </button>
+  </div>
+
+  {% else %}
+  <div>
+    <button
+      type="submit"
+      form="round-form"
+      style="width: 100%"
+      class="btn btn-primary"
+    >
+      Actualizar Tabla
+    </button>
+  </div>
+  {% endif %}
+
+  <div style="margin-top: 15px; margin-bottom: 15px">
+    <button
+      type="button"
+      style="width: 100%"
+      class="btn btn-danger"
+      data-bs-toggle="modal"
+      data-bs-target="#modalDanger"
+    >
+      Concluir Torneo
+    </button>
+  </div>
+  {% endif %} {% if not journey.isActive %}
+  <div class="alert alert-warning" role="alert">
+    Este torneo conluy&oacute;.
+  </div>
+  {% endif %}
+
+  <!-- Modal Danger -->
+  <div
+    class="modal fade"
+    id="modalDanger"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">
+            ¡Atenci&oacute;n!
+          </h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          Est&aacute; a punto de concluir este Torneo. ¿Seguro que desea
+          continuar?
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          >
+            Cancelar
+          </button>
+          <a href="/closeTournament/{{nickname}}/{{journey.id}}">
+            <button type="button" class="btn btn-danger">
+              Concluir Torneo
+            </button>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="modal fade"
+    id="modalNext"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">
+            ¡Atenci&oacute;n!
+          </h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          Se crear&aacute; una nueva ronda. Desea continuar?
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          >
+            Cancelar
+          </button>
+          <a href="/nextRound/{{nickname}}/{{journey.id}}/{{matchesToDisplay}}">
+            <button type="button" class="btn btn-primary">
+              Siguente Ronda
+            </button>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

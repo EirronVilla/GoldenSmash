@@ -1,0 +1,124 @@
+    {% extends "navigation.html" %}
+    {% block content %}
+    {% load static %}
+
+
+    <style>
+        .journey-list-element:hover{
+            background-color: grey;
+            color: white;
+        }
+    </style>
+
+    <div class="container">
+
+        <h1 style="margin-top: 15px;">Torneos</h1>
+
+        <!-- Button trigger modal -->
+        <div style="margin-top: 15px;">
+            <button type="button" style="width: 100%;" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
+                Crear Torneo
+            </button>
+        </div>
+
+        <div style="margin-top: 15px;" class="classification">
+            <ul class="list-group">
+                {% for instance in journeyqueryset %}
+                {% if forloop.counter == 1 %}
+                    <h5>Último torneo:</h5>
+                {% elif forloop.counter == 2 %}
+                    <h5 style="margin-top: 20px;">Torneos anteriores:</h5>
+                {% endif %}
+                <a style="color: black; text-decoration: none; margin-top: 10px;" href="/tournaments/{{nickname}}/{{instance.id}}">
+                    <li class="list-group-item journey-list-element" style="border-radius:11px;">
+                        <div class="row">
+                            <div class="col">
+                                Torneo {{ instance.number }}
+                            </div>
+                            <div class="col" style="
+                            text-align: right;
+                            font-weight: lighter;">
+                                    {{instance.date}}
+                            </div>
+                        </div>
+                    </li>
+                </a>
+                {% endfor %}
+            </ul>
+        </div>
+  
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">¡Atenci&oacute;n!</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST">
+                <div class="modal-body">
+                        {% csrf_token %}
+
+                        <div class="parent-form">
+                            {{ form.as_p }}
+                        </div>
+
+                        <h5> Jugadores: </h5>
+
+                        <div class="playersFormList">
+                            <div class="row mt-2 childForm">
+                                <div class="col-9">
+                                    {{ childForm.player.errors }}
+                                    {{ childForm.player.label_tag }}
+                                    {{ childForm.player }}
+                                </div>
+                                <div class="col">
+                                    <br/>
+                                    <button style="display: none; margin-top: 0.5rem;" type="button" class="btn btn-danger delete-row"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                      </svg></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row p-2">
+                            <a type="button" id="add-row" class="mt-3 btn btn-primary add-new-player" style="color: white;">Agregar Jugador</a>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Crear Torneo</button>
+                    </div>
+                </form>
+            </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        $("#add-row").click(function () {
+
+            let playersList = $(".playersFormList");
+            let newPlayer = playersList.children().first().clone();
+
+            newPlayer.find('input').val("");
+            newPlayer.find('input').attr('name');
+
+            let deleteButon = newPlayer.find('.delete-row');
+            deleteButon.click(deleteRow);
+            deleteButon.css('display','block');
+
+            playersList.append(newPlayer);
+        });
+
+        let deleteRow = function () {
+            let rowToDelete = $(this).parent().parent();
+            rowToDelete.remove();
+        }
+    </script>
+
+
+    {% endblock content %}
